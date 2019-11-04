@@ -31,12 +31,13 @@ namespace IpAnalyzer
         /// </summary>
         /// <param name="ip">ip string in normal or hex form </param>
         /// <returns>if parsed string can be an ip or not 'boolean'</returns>
-        public bool IpValidator(string ip)
+        private bool IpValidator(string ip)
         { 
             // if string contains '.'
             if(ip.Contains('.'))
             {
                 string[] arr = ip.Split('.');
+                int[] result = new int[arr.Length];
                 // if its four actets
                 if (arr.Length != 4)
                 {
@@ -45,9 +46,12 @@ namespace IpAnalyzer
                     for (int i = 0; i < arr.Length; i++)
                     {
                         //if each octet in range 0-255
+                        if (int.TryParse(arr[i], out result[i]))
+                        {
                         if (int.Parse(arr[i]) <= 255 && int.Parse(arr[i]) >= 0)
                         {
                             return true;
+                        }
                         }
                             return false;
                     }
@@ -148,7 +152,7 @@ namespace IpAnalyzer
         /// <returns>true if its loopback, false if not</returns>
         public bool IsLoopBack()
         {
-            if (this.ip.FirstOctate == 127)
+            if (this.GetClass() == IpClass.LOOPBACK)
             {
                 return true;
             }

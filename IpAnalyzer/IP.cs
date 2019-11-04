@@ -18,9 +18,13 @@ namespace IpAnalyzer
             this.ThirdOctet = third;
             this.FourthOctet = fourth;
 
-            if (FirstOctate >=1 && FirstOctate <= 127)
+            if (FirstOctate >=1 && FirstOctate < 127)
             {
                 this.MyIpClass = IpClass.A;
+            }
+            else if (FirstOctate == 127)
+            {
+                this.MyIpClass = IpClass.LOOPBACK;
             }
             else if (FirstOctate >= 128 && FirstOctate <= 191)
             {
