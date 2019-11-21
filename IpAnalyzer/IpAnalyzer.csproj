@@ -43,7 +43,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IP.cs" />
     <Compile Include="IpAnalyzer.cs" />
     <Compile Include="IpClass.cs" />
     <Compile Include="Program.cs" />
