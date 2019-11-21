@@ -4,14 +4,23 @@ using System.Net.NetworkInformation;
 
 namespace IpAnalyzer
 {
-    public class IpAnalyzer
+    public class IpAnalyzer: IComparable<IpAnalyzer>
     {
-        public IP ip { get; set; }
+        public string ip { get; set; }
         public bool IsValid { get; set; }
+
         /// <summary>
-        /// create new IP from normal or hex ip format 
+        /// create new ip from hex format
         /// </summary>
-        /// <param name="ip">string or hex ip format </param>
+        /// <param name="ip">hex ip format</param>
+        public IpAnalyzer(int ip)
+            : this( "0x" + ip.ToString("X"))
+        {       }
+
+        /// <summary>
+        /// create new IP from normal ip format 
+        /// </summary>
+        /// <param name="ip">string ip format </param>
         public IpAnalyzer(string ip)
         {
             this.IsValid = this.IpValidator(ip);
@@ -21,7 +30,7 @@ namespace IpAnalyzer
                 Console.WriteLine(String.Format("new valid ip address created : {0}", this));
             } else
             {
-                this.ip = new IP(-1, -1, -1, -1);
+                this.ip = "00000000";
                 Console.WriteLine(String.Format("Invalid ip address created : {0}", this));
             }
         }
@@ -104,29 +113,96 @@ namespace IpAnalyzer
         /// </summary>
         /// <param name="ip">ip string in normal or hex form </param>
         /// <returns>IP instance</returns>
-        private IP IpParser(string ip)
+        private string IpParser(string ip)
         {
-            IP _ip;
+            string _ip;
             //parse normal form ip
             if (ip.Contains('.'))
             {
-                string[] arr = ip.Split('.');
-                _ip = new IP(int.Parse(arr[0]), int.Parse(arr[1]), int.Parse(arr[2]), int.Parse(arr[3]));
+                _ip = IpStringToHex(ip);
             } else
             // parse hex form ip
             {
-                int[] arr = new int[4];
-                ip = ip.Substring(2);
-                for (int i = 0; i < 3; i++)
-                {
-                    arr[i] = int.Parse(ip.Substring(0, 2), System.Globalization.NumberStyles.HexNumber);
-                    ip = ip.Substring(2);
-                }
-                arr[3] = int.Parse(ip, System.Globalization.NumberStyles.HexNumber);
-                _ip = new IP(arr[0], arr[1], arr[2], arr[3]);
+                _ip = ip.Substring(2);
             }
             return _ip;
         }
+
+
+
+        /// <summary>
+        /// conver from normal ip format to hex format
+        /// </summary>
+        /// <param name="ip">ip in normal format</param>
+        /// <returns>ip in hex format as string</returns>
+        private string IpStringToHex(string ip)
+        {
+            string[] arr = ip.Split('.');
+            var result = "";
+            for (int i = 0; i < arr.Length; i++)
+            {
+                result += int.Parse(arr[i]).ToString("2X");
+            }
+            return result;
+        }
+
+
+
+        /// <summary>
+        /// conver from hex ip format to string format
+        /// </summary>
+        /// <param name="ip">ip in hex format</param>
+        /// <returns>ip in normal format as string</returns>
+        private string IpHexToString(string ip)
+        {
+            int[] arr = new int[4];
+            for (int i = 0; i < 3; i++)
+            {
+                arr[i] = int.Parse(ip.Substring(0, 2), System.Globalization.NumberStyles.HexNumber);
+                ip = ip.Substring(2);
+            }
+            arr[3] = int.Parse(ip, System.Globalization.NumberStyles.HexNumber);
+            var result = arr[0].ToString() + "." + arr[1].ToString() + "." + arr[2].ToString() + "." + arr[3].ToString();
+            return result;
+        }
+
+        /// <summary>
+        /// get first octet for this ip 
+        /// </summary>
+        /// <returns>int value of first octet</returns>
+        private int GetFirstOctet()
+        {
+            return int.Parse(ip.Substring(0, 2), System.Globalization.NumberStyles.HexNumber);
+        }
+
+        /// <summary>
+        /// get second octet for this ip 
+        /// </summary>
+        /// <returns>int value of second octet</returns>
+        private int GetSecondOctet()
+        {
+            return int.Parse(ip.Substring(2, 2), System.Globalization.NumberStyles.HexNumber);
+        }
+
+        /// <summary>
+        /// get third octet for this ip 
+        /// </summary>
+        /// <returns>int value of third octet</returns>
+        private int GetThirdOctet()
+        {
+            return int.Parse(ip.Substring(4, 2), System.Globalization.NumberStyles.HexNumber);
+        }
+
+        /// <summary>
+        /// get fourth octet for this ip 
+        /// </summary>
+        /// <returns>int value of fourth octet</returns>
+        private int GetFourthOctet()
+        {
+            return int.Parse(ip.Substring(6, 2), System.Globalization.NumberStyles.HexNumber);
+        }
+
+
 
         /// <summary>
         /// check if this ip valid or invalid
@@ -143,7 +219,32 @@ namespace IpAnalyzer
         /// <returns>IPClass instance </returns>
         public IpClass GetClass()
         {
-            return this.ip.MyIpClass;
+            var FirstOctate = GetFirstOctet();
+
+            if (FirstOctate >= 1 && FirstOctate < 127)
+            {
+                return IpClass.A;
+            }
+            else if (FirstOctate == 127)
+            {
+                return IpClass.LOOPBACK;
+            }
+            else if (FirstOctate >= 128 && FirstOctate <= 191)
+            {
+                return  IpClass.B;
+            }
+            else if (FirstOctate >= 192 && FirstOctate <= 223)
+            {
+                return IpClass.C;
+            }
+            else if (FirstOctate >= 224 && FirstOctate <= 239)
+            {
+                return IpClass.D;
+            }
+            else
+            {
+                return IpClass.E;
+            }
         }
 
         /// <summary>
@@ -179,7 +280,7 @@ namespace IpAnalyzer
         /// <returns>true if this ip greator than obj ip </returns>
         public bool IsGreator(IpAnalyzer obj)
         {
-            if (this.ip.CompareTo(obj.ip) == 1)
+            if (this.CompareTo(obj) == 1)
             {
                 return true;
             }
@@ -193,7 +294,7 @@ namespace IpAnalyzer
         /// <returns>true if this ip greator than or equal obj ip </returns>
         public bool IsGreatorOrEqual(IpAnalyzer obj)
         {
-            if (this.ip.CompareTo(obj.ip) == 1 || this.ip.CompareTo(obj.ip) == 0)
+            if (this.CompareTo(obj) == 1 || this.CompareTo(obj) == 0)
             {
                 return true;
             }
@@ -207,7 +308,7 @@ namespace IpAnalyzer
         /// <returns>true if this ip greator than obj ip </returns>
         public bool IsLess(IpAnalyzer obj)
         {
-            if (this.ip.CompareTo(obj.ip) == -1)
+            if (this.CompareTo(obj) == -1)
             {
                 return true;
             }
@@ -221,7 +322,7 @@ namespace IpAnalyzer
         /// <returns>true if this ip less than or equal obj ip </returns>
         public bool IsLessThanOrEqual(IpAnalyzer obj)
         {
-            if (this.ip.CompareTo(obj.ip) == -1 || this.ip.CompareTo(obj.ip) == 0)
+            if (this.CompareTo(obj) == -1 || this.CompareTo(obj) == 0)
             {
                 return true;
             }
@@ -235,7 +336,7 @@ namespace IpAnalyzer
         /// <returns>true if this ip equal obj ip </returns>
         public bool IsEqual(IpAnalyzer obj)
         {
-            if (this.ip.CompareTo(obj.ip) == 0)
+            if (this.CompareTo(obj) == 0)
             {
                 return true;
             }
@@ -252,17 +353,19 @@ namespace IpAnalyzer
         /// <returns>true if its private ip, false if not </returns>
         public bool IsPrivate()
         {
-            if (this.ip.FirstOctate == 10)
+            var FirstOctate = GetFirstOctet();
+            var SecondOctet = GetSecondOctet();
+            if (FirstOctate == 10)
             {
                 return true;
             }
-            else if (this.ip.FirstOctate == 192 && this.ip.SecondOctet == 168)
+            else if (FirstOctate == 192 && SecondOctet == 168)
             {
                 return true;
             }
-            else if (this.ip.FirstOctate == 172)
+            else if (FirstOctate == 172)
             {
-                if (this.ip.SecondOctet >= 16 && this.ip.SecondOctet <= 31)
+                if (SecondOctet >= 16 && SecondOctet <= 31)
                 {
                     return true;
                 }
@@ -301,8 +404,31 @@ namespace IpAnalyzer
         /// </summary>
         /// <returns>instance as string </returns>
         public override string ToString()
-        { 
-            return this.ip.ToString();
+        {
+            return IpHexToString(ip);
+        }
+
+
+
+        /// <summary>
+        /// compare to ip's 
+        /// </summary>
+        /// <param name="obj">IP obj to compare with</param>
+        /// <returns>return 1 if this ip greator than obj, -1 if its less than, 0 if both are equal </returns>
+        public int CompareTo(IpAnalyzer obj)
+        {
+            string ThisOctates = this.GetFirstOctet() + "" + this.GetSecondOctet() + "" + this.GetThirdOctet() + "" + this.GetFourthOctet();
+            string ObjOctates = obj.GetFirstOctet() + "" + obj.GetSecondOctet() + "" + obj.GetThirdOctet() + "" + obj.GetFourthOctet();
+            if (int.Parse(ThisOctates) > int.Parse(ObjOctates))
+            {
+                return 1;
+            }
+            else if (int.Parse(ThisOctates) < int.Parse(ObjOctates))
+            {
+                return -1;
+            }
+            return 0;
+
         }
 
     }
