@@ -9,11 +9,79 @@ namespace IpAnalyzer
         public string ip { get; set; }
         public bool IsValid { get; set; }
 
+        public string subnet { get; set; }
+
+        /// <summary>
+        /// create new ip in hex format and subnet mask 
+        /// </summary>
+        /// <param name="ip">ip in hex </param>
+        /// <param name="cidr">subnet mask in cidr</param>
+        public IpAnalyzer(uint ip, int cidr)
+            :this(ip)
+        {
+            if (!Subnet.IsValidCIDR(cidr))
+            {
+                throw new ArgumentException("Invalid CIDR", "cidr");
+            }
+            subnet = Subnet.CIDRToSubnetMask(cidr);
+        }
+
+
+
+        /// <summary>
+        /// create new ip and subnet mask 
+        /// </summary>
+        /// <param name="ip">ip </param>
+        /// <param name="cidr">subnet mask in cidr</param>
+        public IpAnalyzer(string ip, int cidr)
+            : this(ip)
+        {
+            if (!Subnet.IsValidCIDR(cidr))
+            {
+                throw new ArgumentException("Invalid CIDR", "cidr");
+            }
+            subnet = Subnet.CIDRToSubnetMask(cidr);
+        }
+
+
+
+        /// <summary>
+        /// create new ip in hex format and subnet mask 
+        /// </summary>
+        /// <param name="ip">ip in hex </param>
+        /// <param name="subnetMask">subnet mask</param>
+        public IpAnalyzer(uint ip, string subnetMask)
+            : this(ip)
+        {
+            if (!Subnet.IsValidSubnetMask(subnet))
+            {
+                throw new ArgumentException("Invalid subnet mask", "subnetMask");
+            }
+            subnet = subnetMask;
+        }
+
+
+        /// <summary>
+        /// create new ip and subnet mask 
+        /// </summary>
+        /// <param name="ip">ip</param>
+        /// <param name="subnetMask">subnet mask</param>
+        public IpAnalyzer(string ip, string subnetMask)
+            : this(ip)
+        {
+            if (!Subnet.IsValidSubnetMask(subnet))
+            {
+                throw new ArgumentException("Invalid subnet mask", "subnetMask");
+            }
+            subnet = subnetMask;
+        }
+
+
         /// <summary>
         /// create new ip from hex format
         /// </summary>
         /// <param name="ip">hex ip format</param>
-        public IpAnalyzer(int ip)
+        public IpAnalyzer(uint ip)
             : this( "0x" + ip.ToString("X"))
         {       }
 
@@ -382,7 +450,7 @@ namespace IpAnalyzer
             try
             {
                 Ping myPing = new Ping();
-                PingReply reply = myPing.Send(this.ip.ToString(), 1000);
+                PingReply reply = myPing.Send(ToString(), 1000);
                 if (reply != null)
                 {
                     return (reply.Status == 0 ?true: false);
