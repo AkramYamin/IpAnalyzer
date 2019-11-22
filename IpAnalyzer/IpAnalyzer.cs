@@ -441,6 +441,18 @@ namespace IpAnalyzer
             return false;
         }
 
+
+
+        /// <summary>
+        /// Check if this ip public or not 
+        /// </summary>
+        /// <returns>true if its public ip, otherwise false</returns>
+        public bool IsPublic()
+        {
+            return !IsPrivate();
+        }
+
+
         /// <summary>
         /// check if this ip live or not by pinging it 
         /// </summary>
@@ -510,7 +522,47 @@ namespace IpAnalyzer
         }
 
 
+        /// <summary>
+        /// calculate network address for this ip and subnet mask 
+        /// </summary>
+        /// <returns>network address </returns>
+        public string GetNetWorkAddress()
+        {
+            if (subnet == null)
+            {
+                throw new NullReferenceException("No subnet mask provided for this IpAnalyzer Object");
+            }
+            return "";
+        }
 
+
+
+        /// <summary>
+        /// calculate brpadcast address for this ip and subnet mask 
+        /// </summary>
+        /// <returns>broadcast address</returns>
+        public string GetBroadcastAddress()
+        {
+            if (subnet == null)
+            {
+                throw new NullReferenceException("No subnet mask provided for this IpAnalyzer Object");
+            }
+            return "";
+        }
+
+
+        /// <summary>
+        /// calculate wildcard mask for this subnet mask 
+        /// </summary>
+        /// <returns>wildcard mask in stirng format</returns>
+        public string GetWildcardMask()
+        {
+            if (subnet == null)
+            {
+                throw new NullReferenceException("No subnet mask provided for this IpAnalyzer Object");
+            }
+            return "";
+        }
 
         /// <summary>
         /// how to present this IpAnalyzer instance 
