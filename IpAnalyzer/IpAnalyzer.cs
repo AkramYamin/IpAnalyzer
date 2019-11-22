@@ -78,7 +78,7 @@ namespace IpAnalyzer
 
 
         /// <summary>
-        /// create new ip from hex format
+        /// create new ip from hex format 
         /// </summary>
         /// <param name="ip">hex ip format</param>
         public IpAnalyzer(uint ip)
