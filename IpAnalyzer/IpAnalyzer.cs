@@ -9,7 +9,7 @@ namespace IpAnalyzer
         public string ip { get; set; }
         public bool IsValid { get; set; }
 
-        public string subnet { get; set; }
+        public string? subnet { get; set; }
 
         /// <summary>
         /// create new ip in hex format and subnet mask 
@@ -466,6 +466,51 @@ namespace IpAnalyzer
                 return false;
             }
         }
+
+
+        /// <summary>
+        /// Calculate number of subnets for this subnet mask 
+        /// </summary>
+        /// <returns>number of subnets</returns>
+        public int GetNumberOfSubnets()
+        {
+            if (subnet == null)
+            {
+                throw new NullReferenceException("No subnet mask provided for this IpAnalyzer Object");
+            }
+            return 0;
+        }
+
+
+        /// <summary>
+        /// calculate number of hosts for each subnet in this subnet mask 
+        /// </summary>
+        /// <returns>max number of hosts</returns>
+        public int GetNumberOfHosts()
+        {
+            if (subnet == null)
+            {
+                throw new NullReferenceException("No subnet mask provided for this IpAnalyzer Object");
+            }
+            return 0;
+        }
+
+
+        /// <summary>
+        /// calculate number of valid hosts for each subnet in this subnet mask 
+        /// </summary>
+        /// <returns>max number of valid hosts</returns>
+        public int GetNumberOfValidHosts()
+        {
+            if (subnet == null)
+            {
+                throw new NullReferenceException("No subnet mask provided for this IpAnalyzer Object");
+            }
+            return GetNumberOfHosts()-2;
+        }
+
+
+
 
         /// <summary>
         /// how to present this IpAnalyzer instance 
