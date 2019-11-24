@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace IpAnalyzer
 {
@@ -106,6 +107,22 @@ namespace IpAnalyzer
         public static int SubnetMaskToCIDR(string subnetMask)
         {
             return 0;
+        }
+
+
+        /// <summary>
+        /// convert subnet mask to binary 
+        /// </summary>
+        /// <param name="subnet">subnet mask string</param>
+        /// <returns>binary format for subnet mask</returns>
+        public static string IpToBinary(string subnet)
+        {
+            var result = "";
+            foreach (var octet in subnet.Split('.'))
+            {
+                result += Convert.ToString(int.Parse(octet), 2) + ".";
+            }
+            return result.Substring(0, result.Length - 1);
         }
 
 

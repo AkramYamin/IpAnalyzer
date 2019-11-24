@@ -383,6 +383,18 @@ namespace IpAnalyzer
             return false;
         }
 
+
+        /// <summary>
+        /// get binary notation for ip 
+        /// </summary>
+        /// <returns>ip in binary notation</returns>
+        public string GetBinaryNotaion()
+        {
+            return Subnet.IpToBinary(ToString());
+        }
+
+
+
         /// <summary>
         /// compare if this ip less than or equal obj ip 
         /// </summary>
@@ -480,19 +492,6 @@ namespace IpAnalyzer
         }
 
 
-        /// <summary>
-        /// Calculate number of subnets for this subnet mask 
-        /// </summary>
-        /// <returns>number of subnets</returns>
-        public int GetNumberOfSubnets()
-        {
-            if (subnet == null)
-            {
-                throw new NullReferenceException("No subnet mask provided for this IpAnalyzer Object");
-            }
-            return 0;
-        }
-
 
         /// <summary>
         /// calculate number of hosts for each subnet in this subnet mask 
@@ -504,7 +503,7 @@ namespace IpAnalyzer
             {
                 throw new NullReferenceException("No subnet mask provided for this IpAnalyzer Object");
             }
-            return 0;
+            return (int)Math.Pow(2, 32-Subnet.SubnetMaskToCIDR(subnet));
         }
 
 
@@ -523,10 +522,31 @@ namespace IpAnalyzer
 
 
         /// <summary>
+        /// calculate number of subnets for this subnet mask 
+        /// </summary>
+        /// <returns>number of subnets</returns>
+        public int GetNumberOfSubnets()
+        {
+            if (GetClass() == IpClass.A)
+            {
+                return (int)Math.Pow(2, Subnet.SubnetMaskToCIDR(subnet) - 8);
+            }
+            else if (GetClass() == IpClass.B)
+            {
+                return (int)Math.Pow(2, Subnet.SubnetMaskToCIDR(subnet) - 16);
+            }
+            else
+            {
+                return (int)Math.Pow(2, Subnet.SubnetMaskToCIDR(subnet) - 24);
+            }
+        }
+
+
+        /// <summary>
         /// calculate network address for this ip and subnet mask 
         /// </summary>
         /// <returns>network address </returns>
-        public string GetNetWorkAddress()
+        public string GetNetworkAddress()
         {
             if (subnet == null)
             {

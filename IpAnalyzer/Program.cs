@@ -8,6 +8,8 @@ namespace IpAnalyzer
         {
             IpAnalyzer ip = new IpAnalyzer(0xffffffff);
             Console.WriteLine(ip.IsAlive());
+            Console.WriteLine(ip.GetBinaryNotaion());
+
         }
     }
 }
