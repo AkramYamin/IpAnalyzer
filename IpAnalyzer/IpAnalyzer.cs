@@ -1,15 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.NetworkInformation;
 
 namespace IpAnalyzer
 {
-    public class IpAnalyzer: IComparable<IpAnalyzer>
+    public class IpAnalyzer : IComparable<IpAnalyzer>
     {
         public string ip { get; set; }
         public bool IsValid { get; set; }
 
-        public string subnet;
+        public string subnet { get; set; }
 
         /// <summary>
         /// create new ip in hex format and subnet mask 
@@ -19,11 +20,11 @@ namespace IpAnalyzer
         public IpAnalyzer(uint ip, int cidr)
             :this(ip)
         {
-            if (!Subnet.IsValidCIDR(cidr))
+            if (!SubnetUtils.IsValidCIDR(cidr))
             {
                 throw new ArgumentException("Invalid CIDR", "cidr");
             }
-            subnet = Subnet.CIDRToSubnetMask(cidr);
+            subnet = SubnetUtils.CIDRToSubnetMask(cidr);
         }
 
 
@@ -36,11 +37,11 @@ namespace IpAnalyzer
         public IpAnalyzer(string ip, int cidr)
             : this(ip)
         {
-            if (!Subnet.IsValidCIDR(cidr))
+            if (!SubnetUtils.IsValidCIDR(cidr))
             {
                 throw new ArgumentException("Invalid CIDR", "cidr");
             }
-            subnet = Subnet.CIDRToSubnetMask(cidr);
+            subnet = SubnetUtils.CIDRToSubnetMask(cidr);
 
         }
 
@@ -54,7 +55,7 @@ namespace IpAnalyzer
         public IpAnalyzer(uint ip, string subnetMask)
             : this(ip)
         {
-            if (!Subnet.IsValidSubnetMask(subnet))
+            if (!SubnetUtils.IsValidSubnetMask(subnet))
             {
                 throw new ArgumentException("Invalid subnet mask", "subnetMask");
             }
@@ -70,7 +71,7 @@ namespace IpAnalyzer
         public IpAnalyzer(string ip, string subnetMask)
             : this(ip)
         {
-            if (!Subnet.IsValidSubnetMask(subnetMask))
+            if (!SubnetUtils.IsValidSubnetMask(subnetMask))
             {
                 throw new ArgumentException("Invalid subnet mask", "subnetMask");
             }
@@ -92,7 +93,7 @@ namespace IpAnalyzer
         /// <param name="ip">string ip format </param>
         public IpAnalyzer(string ip)
         {
-            this.IsValid = this.IpValidator(ip);
+            this.IsValid = IpValidator(ip);
             if (this.IsValid)
             {
                 this.ip = IpParser(ip);
@@ -109,7 +110,7 @@ namespace IpAnalyzer
         /// </summary>
         /// <param name="ip">ip string in normal or hex form </param>
         /// <returns>if parsed string can be an ip or not 'boolean'</returns>
-        private bool IpValidator(string ip)
+        private static bool IpValidator(string ip)
         { 
             // if string contains '.'
             if(ip.Contains('.'))
@@ -391,7 +392,7 @@ namespace IpAnalyzer
         /// <returns>ip in binary notation</returns>
         public string GetBinaryNotaion()
         {
-            return Subnet.IpToBinary(ToString());
+            return SubnetUtils.IpToBinary(ToString());
         }
 
 
@@ -504,7 +505,7 @@ namespace IpAnalyzer
             {
                 throw new NullReferenceException("No subnet mask provided for this IpAnalyzer Object");
             }
-            return (int)Math.Pow(2, 32-Subnet.SubnetMaskToCIDR(subnet));
+            return (int)Math.Pow(2, 32-SubnetUtils.SubnetMaskToCIDR(subnet));
         }
 
 
@@ -530,15 +531,15 @@ namespace IpAnalyzer
         {
             if (GetClass() == IpClass.A)
             {
-                return (int)Math.Pow(2, Subnet.SubnetMaskToCIDR(subnet) - 8);
+                return (int)Math.Pow(2, SubnetUtils.SubnetMaskToCIDR(subnet) - 8);
             }
             else if (GetClass() == IpClass.B)
             {
-                return (int)Math.Pow(2, Subnet.SubnetMaskToCIDR(subnet) - 16);
+                return (int)Math.Pow(2, SubnetUtils.SubnetMaskToCIDR(subnet) - 16);
             }
             else
             {
-                return (int)Math.Pow(2, Subnet.SubnetMaskToCIDR(subnet) - 24);
+                return (int)Math.Pow(2, SubnetUtils.SubnetMaskToCIDR(subnet) - 24);
             }
         }
 
@@ -596,7 +597,7 @@ namespace IpAnalyzer
             {
                 throw new NullReferenceException("No subnet mask provided for this IpAnalyzer Object");
             }
-            return "/" + Subnet.SubnetMaskToCIDR(subnet);
+            return "/" + SubnetUtils.SubnetMaskToCIDR(subnet);
         }
 
 
@@ -637,6 +638,151 @@ namespace IpAnalyzer
                 result += 255 - int.Parse(octets[i]) + ".";
             }
             return result.Substring(0, result.Length - 1);
+        }
+
+
+
+        /// <summary>
+        /// return next ip for this ip 
+        /// </summary>
+        /// <param name="ip">ip in normal form </param>
+        /// <returns>next ip</returns>
+        public static string GetNextIp(string ip)
+        {
+            if (!IpValidator(ip))
+            {
+                throw new ArgumentException("You just passed an invalid ip address");
+            }
+            else
+            {
+                if (ip == "255.255.255.255")
+                {
+                    return ip;
+                }
+                var stringOctets = ip.Split('.');
+                var intOctets = new int[4];
+                for (int i = 0; i < 4; i++)
+                {
+                    intOctets[i] = int.Parse(stringOctets[i]);
+                }
+
+                if (intOctets[3] + 1 <= 255)
+                {
+                    intOctets[3] += 1;
+                } else
+                {
+                    intOctets[3] = 0;
+                    if (intOctets[2] + 1 <= 255)
+                    {
+                        intOctets[2] += 1;
+                    }
+                    else
+                    {
+                        intOctets[2] = 0;
+                        if (intOctets[1] + 1 <= 255)
+                        {
+                            intOctets[1] += 1;
+                        }
+                        else
+                        {
+                            intOctets[1] = 0;
+                            if (intOctets[0] + 1 <= 255)
+                            {
+                                intOctets[0] += 1;
+                            }
+                            else
+                            {
+                                intOctets[0] = 0;
+                            }
+                        }
+                    }
+                }
+                return intOctets[0] + "." + intOctets[1] + "." + intOctets[2] + "." + intOctets[3];
+            }
+        }
+
+
+
+
+        /// <summary>
+        /// return previous ip for this ip 
+        /// </summary>
+        /// <param name="ip">ip in normal form </param>
+        /// <returns>previous ip</returns>
+        public static string GetPreviousIp(string ip)
+        {
+            if (!IpValidator(ip))
+            {
+                throw new ArgumentException("You just passed an invalid ip address");
+            }
+            else
+            {
+                if (ip == "0.0.0.0")
+                {
+                    return ip;
+                }
+                var stringOctets = ip.Split('.');
+                var intOctets = new int[4];
+                for (int i = 0; i < 4; i++)
+                {
+                    intOctets[i] = int.Parse(stringOctets[i]);
+                }
+
+                if (intOctets[3] - 1 >= 0)
+                {
+                    intOctets[3] -= 1;
+                }
+                else
+                {
+                    intOctets[3] = 255;
+                    if (intOctets[2] - 1 >= 0)
+                    {
+                        intOctets[2] -= 1;
+                    }
+                    else
+                    {
+                        intOctets[2] = 255;
+                        if (intOctets[1] - 1 >= 0)
+                        {
+                            intOctets[1] -= 1;
+                        }
+                        else
+                        {
+                            intOctets[1] = 255;
+                            if (intOctets[0] - 1 >= 0)
+                            {
+                                intOctets[0] -= 1;
+                            }
+                            else
+                            {
+                                intOctets[0] = 0;
+                            }
+                        }
+                    }
+                }
+                return intOctets[0] + "." + intOctets[1] + "." + intOctets[2] + "." + intOctets[3];
+            }
+        }
+
+
+        /// <summary>
+        /// get all subnets for this subnet mask as List of Subnet objects
+        /// </summary>
+        /// <returns>list of subnets </returns>
+        public List<Subnet> GetSubnets()
+        {
+            if (subnet == null)
+            {
+                throw new NullReferenceException("No subnet mask provided for this IpAnalyzer Object");
+            }
+            IpAnalyzer temp = new IpAnalyzer(ToString(), subnet);
+            List<Subnet> result = new List<Subnet>();
+            for (int i = 0; i < GetNumberOfSubnets(); i++)
+            {
+                result.Add(new Subnet(temp.GetNetworkAddress(), temp.GetBroadcastAddress()));
+                temp = new IpAnalyzer(IpAnalyzer.GetNextIp(temp.GetBroadcastAddress()), subnet);
+            }
+            return result;
         }
 
         /// <summary>

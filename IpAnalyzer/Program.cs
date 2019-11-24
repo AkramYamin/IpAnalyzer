@@ -6,7 +6,7 @@ namespace IpAnalyzer
     {
         static void Main(string[] args)
         {
-            IpAnalyzer ip = new IpAnalyzer("213.6.2.253", "255.255.255.252");
+            IpAnalyzer ip = new IpAnalyzer("213.6.2.253", 30);
             Console.WriteLine("Networkaddress : " + ip.GetNetworkAddress());
             Console.WriteLine("Broadcast address : " + ip.GetBroadcastAddress());
             Console.WriteLine("Total number of hosts : " + ip.GetNumberOfHosts());
@@ -21,6 +21,11 @@ namespace IpAnalyzer
             Console.WriteLine("Is private : " + (ip.IsPrivate()));
             Console.WriteLine("Short : " + ip.GetShort());
             Console.WriteLine("Hex : " + (ip.ip));
+            Console.WriteLine("\n\n\n\n\n");
+            foreach (var subnet in ip.GetSubnets()) 
+            {
+                Console.WriteLine(subnet.NetworkAddress + "           " + subnet.GetFirstUsableIp() + " -- " + subnet.GetLastUsableIp() + "    " + subnet.BroadcastAddress);
+            }
         }
     }
 }
