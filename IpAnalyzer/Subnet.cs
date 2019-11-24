@@ -106,7 +106,7 @@ namespace IpAnalyzer
         /// <returns>subnet as CIDR</returns>
         public static int SubnetMaskToCIDR(string subnetMask)
         {
-            return 0;
+            return SubnetMaskCIDR[subnetMask];
         }
 
 
@@ -120,7 +120,7 @@ namespace IpAnalyzer
             var result = "";
             foreach (var octet in subnet.Split('.'))
             {
-                result += Convert.ToString(int.Parse(octet), 2) + ".";
+                result += Convert.ToString(int.Parse(octet), 2).PadLeft(8, '0') + ".";
             }
             return result.Substring(0, result.Length - 1);
         }
@@ -133,7 +133,7 @@ namespace IpAnalyzer
         /// <returns>subnet mask</returns>
         public static string CIDRToSubnetMask(int cidr)
         {
-            return "";
+            return CIDRSubnetMask[cidr];
         }
     }
 }

@@ -9,7 +9,7 @@ namespace IpAnalyzer
         public string ip { get; set; }
         public bool IsValid { get; set; }
 
-        public string? subnet { get; set; }
+        public string subnet;
 
         /// <summary>
         /// create new ip in hex format and subnet mask 
@@ -41,6 +41,7 @@ namespace IpAnalyzer
                 throw new ArgumentException("Invalid CIDR", "cidr");
             }
             subnet = Subnet.CIDRToSubnetMask(cidr);
+
         }
 
 
@@ -69,7 +70,7 @@ namespace IpAnalyzer
         public IpAnalyzer(string ip, string subnetMask)
             : this(ip)
         {
-            if (!Subnet.IsValidSubnetMask(subnet))
+            if (!Subnet.IsValidSubnetMask(subnetMask))
             {
                 throw new ArgumentException("Invalid subnet mask", "subnetMask");
             }
@@ -209,7 +210,7 @@ namespace IpAnalyzer
             var result = "";
             for (int i = 0; i < arr.Length; i++)
             {
-                result += int.Parse(arr[i]).ToString("2X");
+                result += int.Parse(arr[i]).ToString("X2");
             }
             return result;
         }
@@ -552,7 +553,14 @@ namespace IpAnalyzer
             {
                 throw new NullReferenceException("No subnet mask provided for this IpAnalyzer Object");
             }
-            return "";
+            string[] subnetBinary = subnet.Split('.');
+            string[] ipBinary = ToString().Split('.');
+            var result = "";
+            for (int i = 0; i < 4; i++)
+            {
+                result += (int.Parse(subnetBinary[i]) & int.Parse(ipBinary[i])) + ".";
+            }
+            return result.Substring(0, result.Length - 1);
         }
 
 
@@ -567,7 +575,48 @@ namespace IpAnalyzer
             {
                 throw new NullReferenceException("No subnet mask provided for this IpAnalyzer Object");
             }
-            return "";
+            var networkBinary = GetNetworkAddress().Split('.');
+            var wildcardBinary = GetWildcardMask().Split('.');
+            var result = "";
+            for (int i = 0; i < 4; i++)
+            {
+                result += (int.Parse(networkBinary[i]) | int.Parse(wildcardBinary[i])) + ".";
+            }
+            return result.Substring(0, result.Length - 1);
+        }
+
+
+        /// <summary>
+        /// sonvert subnet mask to cidr 
+        /// </summary>
+        /// <returns>CIDR value of subnet mask </returns>
+        public string GetCIDRNotation()
+        {
+            if (subnet == null)
+            {
+                throw new NullReferenceException("No subnet mask provided for this IpAnalyzer Object");
+            }
+            return "/" + Subnet.SubnetMaskToCIDR(subnet);
+        }
+
+
+        /// <summary>
+        /// get short fo ip and subnet mask like (255.255.255.255/14)
+        /// </summary>
+        /// <returns>ip and CIDR notation</returns>
+        public string GetShort()
+        {
+            return ToString() + GetCIDRNotation();
+        }
+
+
+        /// <summary>
+        /// get subnet mask 
+        /// </summary>
+        /// <returns>subnet mask </returns>
+        public string GtSubnetMask()
+        {
+            return subnet;
         }
 
 
@@ -581,7 +630,13 @@ namespace IpAnalyzer
             {
                 throw new NullReferenceException("No subnet mask provided for this IpAnalyzer Object");
             }
-            return "";
+            var octets = subnet.Split('.');
+            var result = "";
+            for (int i = 0; i < 4; i++)
+            {
+                result += 255 - int.Parse(octets[i]) + ".";
+            }
+            return result.Substring(0, result.Length - 1);
         }
 
         /// <summary>
